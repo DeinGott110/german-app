@@ -1328,42 +1328,46 @@ function unlockEverything() {
   if (pass === "1111") {
     
     // 1. Собираем абсолютно все слова из всех уроков
+    let allWords = [];
     if (typeof lessons !== "undefined") {
-      let allLoadedWords = [];
       lessons.forEach(lesson => {
         if (lesson.unlocksVocab) {
-          allLoadedWords = allLoadedWords.concat(lesson.unlocksVocab);
+          allWords = allWords.concat(lesson.unlocksVocab);
         }
       });
-      window.unlockedVocab = allLoadedWords;
     }
 
-    // 2. Открываем все 10 уроков (id от 0 до 9)
-    let allLessonIds = lessons ? lessons.map(l => l.id) : [0,1,2,3,4,5,6,7,8,9];
-    
-    // Записываем во все возможные глобальные массивы прогресса, которые использует твоя loadProgress()
-    if (typeof completedLessons !== "undefined") completedLessons = [...allLessonIds];
-    if (typeof unlockedLessons !== "undefined") unlockedLessons = [...allLessonIds];
-    if (typeof finishedLessons !== "undefined") finishedLessons = [...allLessonIds];
-    
-    // Если у тебя прогресс хранится в localStorage под какими-то ключами — сохраняем их принудительно
-    localStorage.setItem("completedLessons", JSON.stringify(allLessonIds));
-    localStorage.setItem("unlockedLessons", JSON.stringify(allLessonIds));
-    localStorage.setItem("unlockedVocab", JSON.stringify(window.unlockedVocab || []));
+    // 2. Собираем все ID грамматики и узлы карты (активируем все уровни)
+    let allGrammarIds = [];
+    let allMapNodes = {};
+    if (typeof lessons !== "undefined") {
+      lessons.forEach(lesson => {
+        if (lesson.unlocksGrammarIds) {
+          allGrammarIds = allGrammarIds.concat(lesson.unlocksGrammarIds);
+        }
+        // Открываем каждый урок (делаем статус completed или unlocked)
+        allMapNodes[lesson.id] = { unlocked: true, completed: true, stars: 3 };
+      });
+    }
 
-    // Также сохраним стандартные ключи на случай, если проект использует их
-    localStorage.setItem("progress", JSON.stringify(allLessonIds));
+    // 3. Формируем единый объект прогресса, который ждет функция loadProgress()
+    const fullProgress = {
+      unlockedVocab: allWords,
+      unlockedGrammarIds: allGrammarIds,
+      mapNodes: allMapNodes
+    };
 
-    alert("⚡ Режим разработчика активирован: всё открыто!");
+    // 4. Сохраняем под правильным ключом в localStorage
+    localStorage.setItem("german_app_progress", JSON.stringify(fullProgress));
+
+    alert("⚡ Режим разработчика активирован: всё разблокировано!");
 
     // Закрываем панель
     document.getElementById("dev-panel").style.display = "none";
     document.getElementById("dev-password").value = "";
 
-    // Перерисовываем карту и словарь на лету без перезагрузки
-    if (typeof renderMap === "function") renderMap();
-    if (typeof renderVocab === "function") renderVocab();
-    if (typeof updateProfile === "function") updateProfile();
+    // Перезагружаем страницу, чтобы loadProgress() подхватил готовый файл сохранений
+    location.reload();
 
   } else {
     alert("❌ Неверный пароль!");
