@@ -746,3 +746,52 @@ html, body {
   -webkit-overflow-scrolling: touch;
   padding-bottom: 80px; /* Отступ снизу, чтобы контент не перекрывался нижним меню */
 }
+
+/* 1. Запрещаем странице дергаться и растягиваться на телефонах */
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh; /* Учитывает плавающие панели в мобильных браузерах */
+  overflow: hidden; /* Основное окно не крутится целиком */
+  font-family: Arial, sans-serif;
+  background-color: #f4f5f7;
+}
+
+/* 2. Фиксированное верхнее меню (шапка) */
+.header, header, .top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 60px; /* Задай свою высоту, если она отличается */
+  z-index: 1000;
+  background-color: #ffffff;
+  box-sizing: border-box;
+}
+
+/* 3. Фиксированное нижнее меню */
+.footer, footer, .bottom-nav, .nav-menu {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 65px; /* Задай высоту своего меню */
+  z-index: 1000;
+  background-color: #ffffff;
+  box-sizing: border-box;
+}
+
+/* 4. Контейнер для экранов (карты, словарь, профиль), который будет прокручиваться */
+.screen, .content-container, main {
+  position: absolute;
+  top: 60px;    /* Отступ сверху равен высоте шапки */
+  bottom: 65px; /* Отступ снизу равен высоте нижнего меню */
+  left: 0;
+  width: 100%;
+  overflow-y: auto; /* Включаем вертикальный скролл */
+  -webkit-overflow-scrolling: touch; /* Плавный скролл на iPhone/Android */
+  box-sizing: border-box;
+  padding: 15px;
+}
