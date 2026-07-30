@@ -1327,47 +1327,51 @@ function unlockEverything() {
   const pass = document.getElementById("dev-password").value;
   if (pass === "1111") {
     
-    // 1. Собираем абсолютно все слова из всех уроков
+    // 1. Собираем все слова из всех уроков
     let allWords = [];
+    let allGrammar = [];
+    let allNodes = {};
+
     if (typeof lessons !== "undefined") {
       lessons.forEach(lesson => {
         if (lesson.unlocksVocab) {
           allWords = allWords.concat(lesson.unlocksVocab);
         }
-      });
-    }
-
-    // 2. Собираем все ID грамматики и узлы карты (активируем все уровни)
-    let allGrammarIds = [];
-    let allMapNodes = {};
-    if (typeof lessons !== "undefined") {
-      lessons.forEach(lesson => {
         if (lesson.unlocksGrammarIds) {
-          allGrammarIds = allGrammarIds.concat(lesson.unlocksGrammarIds);
+          allGrammar = allGrammar.concat(lesson.unlocksGrammarIds);
         }
-        // Открываем каждый урок (делаем статус completed или unlocked)
-        allMapNodes[lesson.id] = { unlocked: true, completed: true, stars: 3 };
+        // Заполняем структуру карты для каждого урока
+        allNodes[lesson.id] = { unlocked: true, completed: true };
       });
     }
 
-    // 3. Формируем единый объект прогресса, который ждет функция loadProgress()
-    const fullProgress = {
-      unlockedVocab: allWords,
-      unlockedGrammarIds: allGrammarIds,
-      mapNodes: allMapNodes
-    };
+    // 2. Присваиваем значения глобальным переменным скрипта
+    if (typeof unlockedVocab !== "undefined") unlockedVocab = allWords;
+    if (typeof unlockedGrammarIds !== "undefined") unlockedGrammarIds = allGrammar;
+    if (typeof mapNodes !== "undefined") mapNodes = allNodes;
 
-    // 4. Сохраняем под правильным ключом в localStorage
-    localStorage.setItem("german_app_progress", JSON.stringify(fullProgress));
+    // 3. Вызываем официальную функцию сохранения, чтобы она записала всё в localStorage
+    if (typeof saveProgress === "function") {
+      saveProgress();
+    } else {
+      localStorage.setItem("german_app_progress", JSON.stringify({
+        unlockedVocab: allWords,
+        unlockedGrammarIds: allGrammar,
+        mapNodes: allNodes
+      }));
+    }
 
-    alert("⚡ Режим разработчика активирован: всё разблокировано!");
+    alert("⚡ Режим разработчика активирован: всё открыто!");
 
     // Закрываем панель
     document.getElementById("dev-panel").style.display = "none";
     document.getElementById("dev-password").value = "";
 
-    // Перезагружаем страницу, чтобы loadProgress() подхватил готовый файл сохранений
-    location.reload();
+    // 4. Принудительно обновляем интерфейс на экране
+    if (typeof renderMap === "function") renderMap();
+    if (typeof renderVocab === "function") renderVocab();
+    if (typeof renderGrammar === "function") renderGrammar();
+    if (typeof updateProfileStats === "function") updateProfileStats();
 
   } else {
     alert("❌ Неверный пароль!");
