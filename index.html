@@ -85,6 +85,15 @@
     </button>
   </div>
 
+  <div class="dev-section" style="margin-top: 30px; text-align: center;">
+  <button onclick="toggleDevLogin()" style="background: none; border: none; color: #aaa; font-size: 12px; cursor: pointer;">Режим разработчика</button>
+  
+  <div id="dev-panel" style="display: none; margin-top: 10px;">
+    <input type="password" id="dev-password" placeholder="Пароль" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc;">
+    <button onclick="unlockEverything()" style="padding: 5px 10px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">Включить всё</button>
+  </div>
+</div>
+
   <!-- НИЖНЕЕ МЕНЮ -->
   <div class="bottom-nav" id="bottom-nav">
     <button
