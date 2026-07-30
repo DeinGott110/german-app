@@ -1326,24 +1326,50 @@ function toggleDevLogin() {
 function unlockEverything() {
   const pass = document.getElementById("dev-password").value;
   if (pass === "1111") {
-    // 1. Открываем все уроки и добавляем все слова в словарь
+    
+    // 1. Пробуем наполнить все возможные массивы слов и открытых уроков
     if (typeof allWords !== "undefined") {
       unlockedVocab = [...allWords];
-    }
-    
-    // 2. Делаем доступными все уровни/модули (если у тебя есть массив пройденных уроков)
-    if (typeof completedLessons !== "undefined") {
-      // Заполняем массив завершенных уроков с запасом (например, от 1 до 50)
-      completedLessons = Array.from({length: 50}, (_, i) => i + 1);
+    } else if (typeof words !== "undefined") {
+      window.unlockedVocab = [...words];
     }
 
-    // 3. Если есть функции обновления интерфейса карты/словаря — вызываем их
+    // Открываем уроки (пробуем разные популярные имена переменных для уроков)
+    if (typeof completedLessons !== "undefined") {
+      completedLessons = Array.from({length: 100}, (_, i) => i + 1);
+    }
+    if (typeof unlockedLessons !== "undefined") {
+      unlockedLessons = Array.from({length: 100}, (_, i) => i + 1);
+    }
+    if (typeof lessons !== "undefined") {
+      lessons.forEach(l => l.unlocked = true);
+    }
+
+    // Сохраняем прогресс в память браузера (localStorage), если у тебя используется сохранение
+    if (typeof saveProgress === "function") {
+      saveProgress();
+    } else {
+      localStorage.setItem("unlockedVocab", JSON.stringify(window.unlockedVocab || []));
+      localStorage.setItem("completedLessons", JSON.stringify(window.completedLessons || []));
+    }
+
+    // 2. Принудительно вызываем обновление всех экранов интерфейса
     if (typeof renderMap === "function") renderMap();
     if (typeof renderVocab === "function") renderVocab();
-
-    alert("⚡ Режим разработчика активирован: все уроки, слова и грамматика разблокированы!");
+    if (typeof renderGrammar === "function") renderGrammar();
+    if (typeof updateProfile === "function") updateProfile();
     
-    // Закрываем панель
+    // Если есть общая функция перерисовки
+    if (typeof loadUserData === "function") loadUserData();
+    if (typeof initApp === "function") {
+      // Или просто перезагружаем страницу, чтобы применились все данные
+      setTimeout(() => {
+        location.reload();
+      }, 500);
+    }
+
+    alert("⚡ Режим разработчика активирован! Страница сейчас обновится.");
+    
     document.getElementById("dev-panel").style.display = "none";
     document.getElementById("dev-password").value = "";
   } else {
