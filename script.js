@@ -1317,3 +1317,36 @@ function showFeedback(text, color, container) {
   msg.textContent = text;
   msg.style.color = color;
 }
+
+function toggleDevLogin() {
+  const panel = document.getElementById("dev-panel");
+  panel.style.display = panel.style.display === "none" ? "block" : "none";
+}
+
+function unlockEverything() {
+  const pass = document.getElementById("dev-password").value;
+  if (pass === "1111") {
+    // 1. Открываем все уроки и добавляем все слова в словарь
+    if (typeof allWords !== "undefined") {
+      unlockedVocab = [...allWords];
+    }
+    
+    // 2. Делаем доступными все уровни/модули (если у тебя есть массив пройденных уроков)
+    if (typeof completedLessons !== "undefined") {
+      // Заполняем массив завершенных уроков с запасом (например, от 1 до 50)
+      completedLessons = Array.from({length: 50}, (_, i) => i + 1);
+    }
+
+    // 3. Если есть функции обновления интерфейса карты/словаря — вызываем их
+    if (typeof renderMap === "function") renderMap();
+    if (typeof renderVocab === "function") renderVocab();
+
+    alert("⚡ Режим разработчика активирован: все уроки, слова и грамматика разблокированы!");
+    
+    // Закрываем панель
+    document.getElementById("dev-panel").style.display = "none";
+    document.getElementById("dev-password").value = "";
+  } else {
+    alert("❌ Неверный пароль!");
+  }
+}
