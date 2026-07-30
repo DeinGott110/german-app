@@ -689,3 +689,26 @@ body {
   color: #8b5cf6;
   font-weight: bold;
 }
+
+/* Основной контейнер приложения на всю высоту экрана */
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* Убираем общую прокрутку страницы */
+  font-family: Arial, sans-serif;
+  background-color: #f4f7f6;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  max-width: 480px; /* Имитация экрана телефона на ПК (можно убрать, если хочешь на всю ширину) */
+  margin: 0 auto;
+  position: relative;
+  background: #ffffff;
+  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+}
