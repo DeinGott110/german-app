@@ -712,3 +712,37 @@ html, body {
   background: #ffffff;
   box-shadow: 0 0 20px rgba(0,0,0,0.1);
 }
+
+/* Верхнее меню (шапка) — всегда на месте */
+.header, .top-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: #ffffff;
+  flex-shrink: 0;
+}
+
+/* Нижнее меню — всегда прибито к низу экрана */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-width: 480px; /* Должно совпадать с шириной контейнера, если ограничена */
+  margin: 0 auto;
+  height: 60px;
+  background-color: #ffffff;
+  border-top: 1px solid #eaeaea;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 100;
+}
+
+/* Экраны с контентом (карта, словарь, теория, профиль) */
+.screen-content {
+  flex-grow: 1;
+  overflow-y: auto; /* Прокручивается только эта область */
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 80px; /* Отступ снизу, чтобы контент не перекрывался нижним меню */
+}
