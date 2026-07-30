@@ -1327,7 +1327,7 @@ function unlockEverything() {
   const pass = document.getElementById("dev-password").value;
   if (pass === "1111") {
     
-    // 1. Собираем абсолютно все слова из всех уроков в один общий массив словаря
+    // 1. Собираем абсолютно все слова из всех уроков
     if (typeof lessons !== "undefined") {
       let allLoadedWords = [];
       lessons.forEach(lesson => {
@@ -1335,47 +1335,35 @@ function unlockEverything() {
           allLoadedWords = allLoadedWords.concat(lesson.unlocksVocab);
         }
       });
-      // Записываем в переменную словаря (попробуем разные распространенные варианты названий)
       window.unlockedVocab = allLoadedWords;
-      if (typeof unlockedVocab !== "undefined") {
-        unlockedVocab = allLoadedWords;
-      }
     }
 
-    // 2. Открываем все уроки (заполняем массивы пройденных/открытых уроков IDшниками от 0 до 9)
-    let allLessonIds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+    // 2. Открываем все 10 уроков (id от 0 до 9)
+    let allLessonIds = lessons ? lessons.map(l => l.id) : [0,1,2,3,4,5,6,7,8,9];
     
-    if (typeof completedLessons !== "undefined") {
-      completedLessons = [...allLessonIds];
-    } else {
-      window.completedLessons = [...allLessonIds];
-    }
-
-    if (typeof unlockedLessons !== "undefined") {
-      unlockedLessons = [...allLessonIds];
-    } else {
-      window.unlockedLessons = [...allLessonIds];
-    }
-
-    // 3. Сохраняем это всё в память браузера (localStorage), чтобы сайт запомнил разблокировку
+    // Записываем во все возможные глобальные массивы прогресса, которые использует твоя loadProgress()
+    if (typeof completedLessons !== "undefined") completedLessons = [...allLessonIds];
+    if (typeof unlockedLessons !== "undefined") unlockedLessons = [...allLessonIds];
+    if (typeof finishedLessons !== "undefined") finishedLessons = [...allLessonIds];
+    
+    // Если у тебя прогресс хранится в localStorage под какими-то ключами — сохраняем их принудительно
+    localStorage.setItem("completedLessons", JSON.stringify(allLessonIds));
+    localStorage.setItem("unlockedLessons", JSON.stringify(allLessonIds));
     localStorage.setItem("unlockedVocab", JSON.stringify(window.unlockedVocab || []));
-    localStorage.setItem("completedLessons", JSON.stringify(window.completedLessons || []));
-    localStorage.setItem("unlockedLessons", JSON.stringify(window.unlockedLessons || []));
 
-    // 4. Перерисовываем интерфейс (если такие функции существуют)
-    if (typeof renderMap === "function") renderMap();
-    if (typeof renderVocab === "function") renderVocab();
-    if (typeof renderGrammar === "function") renderGrammar();
-    if (typeof updateProfile === "function") updateProfile();
+    // Также сохраним стандартные ключи на случай, если проект использует их
+    localStorage.setItem("progress", JSON.stringify(allLessonIds));
 
-    alert("⚡ Режим разработчика активирован: все уроки, слова и грамматика открыты!");
+    alert("⚡ Режим разработчика активирован: всё открыто!");
 
-    // Закрываем панель ввода пароля
+    // Закрываем панель
     document.getElementById("dev-panel").style.display = "none";
     document.getElementById("dev-password").value = "";
 
-    // Принудительно перезагружаем страницу, чтобы обновились все блоки
-    location.reload();
+    // Перерисовываем карту и словарь на лету без перезагрузки
+    if (typeof renderMap === "function") renderMap();
+    if (typeof renderVocab === "function") renderVocab();
+    if (typeof updateProfile === "function") updateProfile();
 
   } else {
     alert("❌ Неверный пароль!");
