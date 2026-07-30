@@ -1213,9 +1213,23 @@ let quizScore = 0;
 let currentQuizWord = null;
 
 function startQuiz() {
-  if (unlockedVocab.length === 0) {
+  // Фильтруем только те слова, у которых есть явный артикль (der, die, das)
+  // или в строке `de` слово начинается с артикля
+  const availableWords = unlockedVocab.filter(item => {
+    if (item.article) {
+      const art = item.article.trim().toLowerCase();
+      return art === 'der' || art === 'die' || art === 'das';
+    }
+    if (item.de) {
+      const lower = item.de.toLowerCase();
+      return lower.startsWith("der ") || lower.startsWith("die ") || lower.startsWith("das ");
+    }
+    return false;
+  });
+
+  if (availableWords.length === 0) {
     alert(
-      "Твой словарь пока пуст! Пройди хотя бы один урок, чтобы появились слова для квиза.",
+      "В твоем разблокированном словаре пока нет слов с артиклями! Пройди еще уроки.",
     );
     return;
   }
@@ -1225,7 +1239,7 @@ function startQuiz() {
   document.getElementById("quiz-screen").style.display = "block";
 
   quizScore = 0;
-  nextQuizRound();
+  nextQuizRound(availableWords);
 }
 
 function closeQuiz() {
@@ -1234,39 +1248,72 @@ function closeQuiz() {
   document.getElementById("bottom-nav").style.display = "flex";
 }
 
-function nextQuizRound() {
+function nextQuizRound(wordsPool) {
+  // Сохраняем пул слов для раунда в глобальной переменной или передаем дальше
+  window._currentQuizPool = wordsPool || window._currentQuizPool;
+  
   document.getElementById("quiz-score").innerText = `Счет: ${quizScore}`;
+  
+  // Убираем старый статус ответа, если был
+  const oldMsg = document.getElementById("feedback-msg");
+  if (oldMsg) oldMsg.remove();
+  
+  const quizCard = document.getElementById("quiz-card") || document.getElementById("quiz-screen");
+  quizCard.style.borderColor = "";
+  quizCard.style.backgroundColor = "";
 
-  // Берем случайное слово из разблокированных
-  const randomIndex = Math.floor(Math.random() * unlockedVocab.length);
-  currentQuizWord = unlockedVocab[randomIndex];
+  const randomIndex = Math.floor(Math.random() * window._currentQuizPool.length);
+  currentQuizWord = window._currentQuizPool[randomIndex];
 
-  // Ожидается, что в объекте слова w есть поле article ('der', 'die', 'das' или 'plural')
-  // Либо мы вытаскиваем его из строки w.de (например, если слова записаны как "das Haus")
-  document.getElementById("quiz-word-display").innerText = currentQuizWord.de;
+  // Показываем слово без артикля для угадывания (если в de записано "das Haus", убираем артикль для теста)
+  let displayWord = currentQuizWord.de;
+  const lower = displayWord.toLowerCase();
+  if (lower.startsWith("der ")) displayWord = displayWord.substring(4);
+  else if (lower.startsWith("die ")) displayWord = displayWord.substring(4);
+  else if (lower.startsWith("das ")) displayWord = displayWord.substring(4);
+
+  document.getElementById("quiz-word-display").innerText = displayWord.trim();
 }
 
 function checkArticle(selectedArticle) {
-  // Определяем правильный артикль (проверяем поле article у слова или парсим из w.de)
-  // Для примера предполагаем, что у объекта слова есть property w.article ("der", "die", "das", "plural")
-  // Или если в w.de прямо написано слово с артиклем:
   let correctArticle = currentQuizWord.article;
 
   if (!correctArticle) {
-    // Автоопределение, если в словаре записано вместе с артиклем (например "das Haus")
     const lower = currentQuizWord.de.toLowerCase();
     if (lower.startsWith("der ")) correctArticle = "der";
     else if (lower.startsWith("die ")) correctArticle = "die";
     else if (lower.startsWith("das ")) correctArticle = "das";
-    else correctArticle = "der"; // дефолт
   }
 
-  if (selectedArticle === correctArticle) {
+  const quizCard = document.getElementById("quiz-card") || document.getElementById("quiz-screen");
+
+  if (selectedArticle.toLowerCase() === correctArticle.toLowerCase()) {
     quizScore += 10;
-    alert("Правильно! 🎉");
+    quizCard.style.borderColor = "#2ecc71";
+    quizCard.style.backgroundColor = "#e8f8f5";
+    showFeedback(`✅ Правильно! Это ${correctArticle} ${document.getElementById("quiz-word-display").innerText}`, "#2ecc71", quizCard);
   } else {
-    alert(`Ошибка! Правильный ответ: ${correctArticle}`);
+    quizCard.style.borderColor = "#e74c3c";
+    quizCard.style.backgroundColor = "#fadbd8";
+    showFeedback(`❌ Неправильно! Правильный ответ: ${correctArticle}`, "#e74c3c", quizCard);
   }
 
-  nextQuizRound();
+  // Пауза в 1.2 секунды перед следующим вопросом, чтобы игрок успел увидеть результат
+  setTimeout(() => {
+    nextQuizRound();
+  }, 1200);
+}
+
+function showFeedback(text, color, container) {
+  let msg = document.getElementById("feedback-msg");
+  if (!msg) {
+    msg = document.createElement("div");
+    msg.id = "feedback-msg";
+    msg.style.marginTop = "15px";
+    msg.style.fontWeight = "bold";
+    msg.style.fontSize = "16px";
+    container.appendChild(msg);
+  }
+  msg.textContent = text;
+  msg.style.color = color;
 }
